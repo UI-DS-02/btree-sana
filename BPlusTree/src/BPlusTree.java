@@ -20,7 +20,115 @@ public class BPlusTree {
         }
         return null;
     }
+    //======================================= return a collection of all nodes in tree ==================================================
+    public ArrayList<Map<Double, Map<String,String>>> getCollection (){
+        Node target = root;
+        ArrayList<Map<Double, Map<String,String>>> result = new ArrayList<>();
+        while (!target.isLeafNode)
+        {
+            target = ((IndexNode)target).children.get(0);
+        }
+        while (true)
+        {
+            int index = 0 ;
+            while (index<target.keys.size())
+            {
 
+                result.add(((LeafNode)target).values.get(index));
+                index++;
+            }
+            if(((LeafNode) target).nextLeaf == null)
+                break;
+            else
+                target = ((LeafNode)target).nextLeaf;
+        }
+        return result;
+    }
+    //=========================== range search ===========================
+    Node[] range(Double from , Double to){
+        Node[] range = new Node[2];
+        Node target = root;
+        boolean isFound = false;
+        while (!target.isLeafNode)
+        {
+            target = ((IndexNode)target).children.get(0);
+        }
+        // === find from node ===
+        while (true){
+            int index = 0 ;
+            while (index<target.keys.size())
+            {
+                if(((LeafNode)target).keys.get(index)>=from)
+                {
+                    range[0] = target;
+                    isFound = true;
+                    break;
+                }
+                index++;
+            }
+            if(isFound)
+                break;
+            if(((LeafNode)target).nextLeaf == null)
+            {
+                range[0] = null;
+                range[1] = null;
+                return range;
+            }
+            else
+                target = ((LeafNode)target).nextLeaf;
+        }
+        //  ======= find to node =======
+        LeafNode save = (LeafNode) target;
+        while(true)
+        {
+            int index = 0;
+            if(target.keys.get(0)>to)
+            {
+                range[1] = save;
+                return range;
+            }
+            while(index < target.keys.size()-1)
+            {
+                if(target.keys.get(index+1)>to){
+                    range[1] = target;
+                    return range;
+                }
+                index++;
+            }
+            if(((LeafNode) target).nextLeaf == null)
+            {
+                range[1] = target;
+                return range;
+            }
+            save = (LeafNode) target;
+            target = ((LeafNode) target).nextLeaf;
+        }
+    }
+    //================= search leaf nodes in range ===============
+    ArrayList<Map<Double, Map<String,String>>> getCollectionInRange(Double from , Double to){
+        ArrayList<Map<Double, Map<String,String>>> result = new ArrayList<>();
+        Node[] range =  range(from , to);
+        LeafNode fromNode = (LeafNode) range[0];
+        LeafNode toNode = (LeafNode) range[1];
+        if(fromNode == null)
+            return null;
+        while(true)
+        {
+            int index = 0;
+            while(index<fromNode.keys.size())
+            {
+                if(fromNode.keys.get(index) >= from && fromNode.keys.get(index)<=to)
+                    result.add(fromNode.values.get(index));
+                index++;
+            }
+            if(fromNode == toNode)
+                return result;
+            else
+            {
+                fromNode = fromNode.nextLeaf;
+            }
+        }
+    }
     public void insert(double key, Map<Double, Map<String,String>> value) {
         // initial insert to tree
         if (root == null){
