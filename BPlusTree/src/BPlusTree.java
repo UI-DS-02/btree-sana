@@ -7,6 +7,19 @@ public class BPlusTree {
 
     public Node root;
     public static final int D = 2;
+    //================== actual search ==================
+    public Map<Double, Map<String,String>> search(double key) {
+        // look for leaf node that should contain key
+        LeafNode leaf = findLeafNodeWithKey(root, key);
+
+        // look for value within leaf
+        for (int i = 0; i < leaf.keys.size(); i++){
+            if (leaf.keys.get(i) == key){
+                return leaf.values.get(i);
+            }
+        }
+        return null;
+    }
 
     public void insert(double key, Map<Double, Map<String,String>> value) {
         // initial insert to tree
